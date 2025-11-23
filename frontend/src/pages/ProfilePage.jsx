@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import axios from "axios"; // use with real backend
+import api from "../utils/api";
 
 function ProfilePage() {
   const navigate = useNavigate();
@@ -49,28 +49,14 @@ function ProfilePage() {
     setLoading(true);
     try {
       // --- Option A: real API ---
-      /*
       const token = user.token;
-      const { data } = await axios.put('/api/users/profile', { name, email, currentPassword, newPassword }, {
+      const { data } = await api.put('/api/users/profile', { name, email, currentPassword, newPassword }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // server should return updated user
       localStorage.setItem('user', JSON.stringify(data));
       setUser(data);
       setMessage('Profile updated successfully.');
-      */
-
-      // --- Option B: mock local update (works without backend) ---
-      await new Promise((r) => setTimeout(r, 400));
-      const updated = { ...user, name: name.trim(), email: email.trim() };
-      // NOTE: in a real app you should verify currentPassword before allowing password change
-      if (newPassword) {
-        // we don't store password in this mock; just simulate success
-        updated.passwordChanged = true;
-      }
-      localStorage.setItem("user", JSON.stringify(updated));
-      setUser(updated);
-      setMessage("Profile updated (mock).");
 
       // clear password fields
       setCurrentPassword("");

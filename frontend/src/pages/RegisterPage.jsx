@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; 
+import api from "../utils/api"; 
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ function RegisterPage() {
 
     setLoading(true);
     try {
-      const { data } = await axios.post("/api/users/register", { name, email, password });
+      const { data } = await api.post("/api/users/register", { name, email, password });
       localStorage.setItem("user", JSON.stringify(data));
 
       navigate("/", { replace: true });

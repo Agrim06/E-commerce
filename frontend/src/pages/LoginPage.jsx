@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";
 
 function LoginPage() {
     const navigate = useNavigate();
@@ -34,7 +34,7 @@ function LoginPage() {
 
         try {
 
-            const { data } = await axios.post("/api/users/login" , {email, password});
+            const { data } = await api.post("/api/users/login" , {email, password});
             localStorage.setItem("user", JSON.stringify(data));
             
             navigate(from, { replace: true });
