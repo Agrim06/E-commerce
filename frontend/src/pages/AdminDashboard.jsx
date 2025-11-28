@@ -1,38 +1,295 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import image1 from '../images/1.png';
-import image2 from '../images/2.png';
-import image3 from '../images/3.png';
+import { useState , useEffect } from "react";
+import { replace, useNavigate } from "react-router-dom";
+import api from "../utils/api";
 
-function AdminDashboard(){
-    const sampleProducts = [
-        { _id: '1', name: 'Sample Product A', price: 99.99, image: image1 },
-        { _id: '2', name: 'Sample Product B', price: 49.99, image: image2 },
-        { _id: '3', name: 'Sample Product C', price: 29.99, image: image3 },
-    ];
+function AdminDashboard() {
+    const navigate = useNavigate();
 
-    return(
-        <div className="container page">
-            <div className="page-title">Admin Dashboard - All Products</div>
-            <div className="product-grid">
-                {sampleProducts.map((p) => (
-                    <div key={p._id} className="product-card">
-                        <Link to={`/product/${p._id}`}>
-                            <img src={p.image} alt={p.name} className="product-img" />
-                        </Link>
-                        <div className="product-info">
-                            <Link to={`/product/${p._id}`} className="product-name">{p.name}</Link>
-                            <div className="product-bottom">
-                                <div className="product-price">${p.price}</div>
-                                 <button className="btn">Edit</button>
-                                 <button className="btn btn-danger">Delete</button>
-                        </div>
-                    </div>
-                    </div>
-                ))}
+    const[products, setProducts] = useState([]);
+    const[loading, setLoading] = useState(false);
+    const[saving, setSaving] = useState(false);
+    const[error, setError] = useState("");
+    const[formError, setFormError] = useState("");
+
+    const[formData, setFormData] = useState({
+        name: "",
+        price: "",
+        countInStock: "",
+        image: "",
+        brand: "",
+        category: "",
+        description: "",
+    });
+
+    useEffect(() =>{
+        const raw = 
+            localStorage.getItem("user") || sessionStorage.getItem("user")
+        if(!raw){
+            navigate("/login", { replace: true, state: { from: "/admin" } });
+            return;
+        }
+
+        try{
+            const user = JSON.parse(raw);
+            if(!user.isAdmin){
+                navigate("/" , {replace: true});
+                return;
+            }
+        }catch{
+            navigate("/login" , {replace:true});
+            return;
+        }
+
+        fetchProducts();
+    }, []); 
+
+    async function fetchProducts() {
+        setLoading(true);
+        setError("");
+        try{
+            const res = await api.get("/api/products");
+
+            const list = Array.isArray(res.data) ? res.data : res.data.products;
+            setProducts( list || []);
+        } catch (err){
+            console.error(err);
+            setError(
+                err?.response?.data?.message || "Failed to load products from server."
+            );
+        } finally{
+            setLoading(false);
+            }
+        }
+
+        function handleChange(e) {
+            const { name, value } = e.target;
+            setFormData((prev) => ({ ...prev, [name]: value }));
+        }
+
+        async function handleCreateProduct(e) {
+            e.preventDefault();
+            setFormError("");
+
+            if(!formData.name.trim() || !formData.price){
+                setFormError("Name and price are required.");
+                return;
+            }
+
+            setSaving(true);
+            try{
+                const payload = {
+                    name : formData.name.trim(),
+                    price : Number(formData.price),
+                    countInStock : Number(formData.countInStock || 0),
+                    image : formData.image.trim() || "https://via.placeholder.com/400",
+                    brand: formData.brand.trim() || "Generic",
+                    category: formData.category.trim() || "General",
+                    description: formData.description.trim() || "No description", 
+                };
+
+                const res = await api.post("/api/products" , payload);
+                const created = res.data;
+
+                setProducts((prev) => [created, ...prev]);
+
+                setFormData({
+                    name: "",
+                    price: "",
+                    countInStock: "",
+                    image: "",
+                    brand: "",
+                    category: "",
+                    description: "",
+                });
+            }catch(err){
+                console.log(err);
+                setFormError(
+                    err?.response?.data?.message || "Failed to create Product"
+                );
+            }finally{
+                setSaving(false);
+            }
+        }    
+        async function handleDelete(id) {
+            const ok = window.confirm(
+                "Are you sure you want to delete this product? This cannot be undone."
+            );
+
+            if(!ok) return;
+            
+            try{
+                await api.delete(`/api/products/${id}`);
+                setProducts((prev) => prev.filter((p)=> p._id != id))
+            }catch(err){
+                console.log(err);
+                alert(
+                    err?.response?.data?.message || "Failed to delete product. Check console."
+                );
+            }
+        }    
+        return(
+            <div className="container page admin-page">
+            <div className="admin-header">
+                <h1 className="page-title">Admin Dashboard</h1>
+                <p className="admin-subtitle">
+                Manage products: create, view, and delete items.
+                </p>
             </div>
-        </div>
-    )
-}
 
+            {/* Create product panel */}
+            <section className="admin-panel">
+                <h2 className="admin-panel-title">Add New Product</h2>
+
+                <form className="admin-form" onSubmit={handleCreateProduct}>
+                {formError && <div className="form-error">{formError}</div>}
+
+                <div className="admin-form-grid">
+                    <label className="form-label">
+                    Name
+                    <input
+                        className="input"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        placeholder="Product name"
+                        required
+                    />
+                    </label>
+
+                    <label className="form-label">
+                    Price (₹)
+                    <input
+                        className="input"
+                        name="price"
+                        type="number"
+                        step="0.01"
+                        value={formData.price}
+                        onChange={handleChange}
+                        placeholder="999.99"
+                        required
+                    />
+                    </label>
+
+                    <label className="form-label">
+                    Stock
+                    <input
+                        className="input"
+                        name="countInStock"
+                        type="number"
+                        value={formData.countInStock}
+                        onChange={handleChange}
+                        placeholder="10"
+                    />
+                    </label>
+
+                    <label className="form-label">
+                    Image URL
+                    <input
+                        className="input"
+                        name="image"
+                        value={formData.image}
+                        onChange={handleChange}
+                        placeholder="https://..."
+                    />
+                    </label>
+
+                    <label className="form-label">
+                    Brand
+                    <input
+                        className="input"
+                        name="brand"
+                        value={formData.brand}
+                        onChange={handleChange}
+                        placeholder="Brand name"
+                    />
+                    </label>
+
+                    <label className="form-label">
+                    Category
+                    <input
+                        className="input"
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        placeholder="Category"
+                    />
+                    </label>
+                </div>
+
+                <label className="form-label">
+                    Description
+                    <textarea
+                    className="input admin-textarea"
+                    name="description"
+                    rows="3"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Short description of the product..."
+                    />
+                </label>
+
+                <button className="btn" type="submit" disabled={saving}>
+                    {saving ? "Saving..." : "Create Product"}
+                </button>
+                </form>
+            </section>
+
+            {/* Product list */}
+            <section className="admin-panel">
+                <div className="admin-panel-header">
+                <h2 className="admin-panel-title">Products</h2>
+                {loading ? (
+                    <span className="admin-badge">Loading...</span>
+                ) : (
+                    <span className="admin-badge">
+                    Total: {products.length} product{products.length !== 1 && "s"}
+                    </span>
+                )}
+                </div>
+
+                {error && <div className="form-error">{error}</div>}
+
+                <div className="admin-table-wrapper">
+                {loading ? (
+                    <p>Loading products...</p>
+                ) : products.length === 0 ? (
+                    <p>No products found. Add one above.</p>
+                ) : (
+                    <table className="admin-table">
+                    <thead>
+                        <tr>
+                        <th>Name</th>
+                        <th>Price (₹)</th>
+                        <th>Stock</th>
+                        <th>Category</th>
+                        <th className="admin-actions-cell">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {products.map((p) => (
+                        <tr key={p._id}>
+                            <td>{p.name}</td>
+                            <td>{Number(p.price).toFixed(2)}</td>
+                            <td>{p.countInStock}</td>
+                            <td>{p.category || "-"}</td>
+                            <td className="admin-actions-cell">
+                           
+                            <button
+                                type="button"
+                                className="btn admin-btn-delete"
+                                onClick={() => handleDelete(p._id)}
+                            >
+                                Delete
+                            </button>
+                            </td>
+                        </tr>
+                        ))}
+                    </tbody>
+                    </table>
+                )}
+                </div>
+            </section>
+            </div>
+        );
+    }
 export default AdminDashboard;
