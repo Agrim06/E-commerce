@@ -152,7 +152,7 @@ function HomePage() {
           {products.map((p)=>(
             <div className="product-card">
               <Link to={`/product/${p._id}`}>
-                <img src = {p.image} />
+                <img src={p.image} className="product-img" alt={p.name} />
               </Link>
               <div className="product-info">
               <Link to={`/product/${p._id}`}>{p.name}</Link>

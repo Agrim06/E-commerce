@@ -21,26 +21,49 @@ function AdminDashboard() {
         description: "",
     });
 
-    useEffect(() =>{
-        const raw = 
-            localStorage.getItem("user") || sessionStorage.getItem("user")
-        if(!raw){
-            navigate("/login", { replace: true, state: { from: "/admin" } });
-            return;
-        }
-
-        try{
-            const user = JSON.parse(raw);
-            if(!user.isAdmin){
-                navigate("/" , {replace: true});
+    useEffect(() => {
+        const checkAdminStatus = async () => {
+            const raw = localStorage.getItem("user") || sessionStorage.getItem("user");
+            
+            if (!raw) {
+                navigate("/login", { replace: true, state: { from: "/admin" } });
                 return;
             }
-        }catch{
-            navigate("/login" , {replace:true});
-            return;
-        }
 
-        fetchProducts();
+            let user;
+            try {
+                user = JSON.parse(raw);
+            } catch {
+                navigate("/login", { replace: true });
+                return;
+            }
+
+            if (user.isAdmin) {
+                fetchProducts();
+                return;
+            }
+
+            // If local storage says not admin, double check with server
+            try {
+                const { data } = await api.get("/api/users/profile");
+                if (data.isAdmin) {
+                    // Update local storage with fresh data
+                    const updatedUser = { ...user, ...data };
+                    localStorage.setItem("user", JSON.stringify(updatedUser));
+                    if (sessionStorage.getItem("user")) {
+                        sessionStorage.setItem("user", JSON.stringify(updatedUser));
+                    }
+                    fetchProducts();
+                } else {
+                    navigate("/", { replace: true });
+                }
+            } catch (error) {
+                console.error("Failed to verify admin status", error);
+                navigate("/", { replace: true });
+            }
+        };
+
+        checkAdminStatus();
     }, []); 
 
     async function fetchProducts() {
