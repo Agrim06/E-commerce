@@ -38,19 +38,34 @@ export const getProductById = asyncHandler(async(req, res) =>{
 // @route  POST /api/products
 // @access Private/Admin
 export const createProduct = asyncHandler(async(req, res) =>{
+    const {
+      name, 
+      price,
+      countInStock,
+      image,
+      brand,
+      category,
+      description,
+    } = req.body;
+
+    if(!name || !price ){
+      res.status(400);
+      throw new Error("Name and price details are required");
+    }
+
     const product = new Product({
-    name: "Sample name",
-    price: 0,
-    user: req.user._id,
-    image: "/images/sample.jpg",
-    brand: "Sample brand",
-    category: "Sample category",
-    countInStock: 0,
-    numReviews: 0,
-    description: "Sample description",
-  });
-  const created = await product.save();
-  res.status(201).json(created);
+      name,
+      price,
+      countInStock: countInStock ?? 0,
+      image: image || "/images/default-product.jpg",
+      brand: brand || "Generic",
+      category: category || "General",
+      description: description || "No description",
+      user: req.user._id
+      });
+
+      const created = await product.save();
+      res.status(201).json(created);
 });
 
 // @desc   Admin update product

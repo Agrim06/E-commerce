@@ -1,17 +1,103 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import api from "../utils/api"
 
 function HomePage() {
-  const sampleProducts = [
-    { _id: '1', name: 'Sample Product A', price: 99.99, image: '/images/product1.jpg' },
-    { _id: '2', name: 'Sample Product B', price: 49.99, image: '/images/product2.jpg' },
-    { _id: '3', name: 'Sample Product C', price: 29.99, image: '/images/product3.jpg' },
-  ];
+
+  const [products, setProducts] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() =>{
+    async function fetchProducts() {
+      setLoading(true);
+      setError("")
+
+      try{
+        const res = await api.get("/api/products");   
+        const list = Array.isArray(res.data) ? res.data : res.data.products;
+        setProducts(list || []);
+      }catch(err){
+        console.log(err);
+        setError(
+          err?.response?.data?.message || "Failed to load products from server."
+        );
+      }finally{
+        setLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    function updateCartCount() {
+      try {
+        const raw = localStorage.getItem("cart");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const totalQty = parsed.reduce(
+            (s, it) => s + Number(it.qty || 0),
+            0
+          );
+          setCartCount(totalQty);
+        } else {
+          setCartCount(0);
+        }
+      } catch {
+        setCartCount(0);
+      }
+    }
+
+    updateCartCount();
+
+    window.addEventListener("storage", updateCartCount);
+
+    return () => {
+      window.removeEventListener("storage", updateCartCount);
+    };
+  }, []);
+
+  function addToCart(product, qty = 1){
+    try{
+      const raw = localStorage.getItem("cart");
+      let cart = raw?JSON.parse(raw) :[];
+
+      const exisiting = cart.find((it) => it._id === product._id);
+      if(exisiting){
+        exisiting.qty = Number(exisiting.qty) + Number(qty);
+      }else{
+        cart.push({
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          qty: Number(qty),
+        });
+      }
+       localStorage.setItem("cart", JSON.stringify(cart));
+
+    const totalQty = cart.reduce((s, it) => s + Number(it.qty || 0), 0);
+    setCartCount(totalQty);
+
+  } catch (err) {
+    console.error("Failed to add to cart:", err);
+    }
+  }
 
   const highlights = [
-    { title: 'Free shipping', description: 'Complimentary delivery on orders over $50' },
-    { title: 'Carbon neutral', description: 'Sustainable packaging for every shipment' },
-    { title: '48h dispatch', description: 'Fast fulfilment from local warehouses' },
+    {
+      title: "New Arrivals",
+      description: "Check out our latest products.",
+    },
+    {
+      title: "Best Sellers",
+      description: "See what everyone's buying.",
+    },
+    {
+      title: "On Sale",
+      description: "Get the best deals.",
+    },
   ];
 
   return (
@@ -63,20 +149,19 @@ function HomePage() {
 
         <div className="page-title">Featured products</div>
         <div className="product-grid">
-          {sampleProducts.map((p) => (
-            <div key={p._id} className="product-card">
+          {products.map((p)=>(
+            <div className="product-card">
               <Link to={`/product/${p._id}`}>
-                <img src={p.image} alt={p.name} className="product-img" />
+                <img src = {p.image} />
               </Link>
               <div className="product-info">
-                <Link to={`/product/${p._id}`} className="product-name">{p.name}</Link>
-                <p className="product-desc">Performance fabrics, minimal finish, timeless fit.</p>
-                <div className="product-bottom">
-                  <div className="product-price">${p.price.toFixed(2)}</div>
-                  <button className="btn btn-ghost">Add</button>
-                </div>
-              </div>
+              <Link to={`/product/${p._id}`}>{p.name}</Link>
+              <div className="product-price">₹{p.price.toFixed(2)}</div>
+
+              <button className="btn" onClick={() => addToCart(p, 1)}>Add to Cart</button>
+              <Link to={`/product/${p._id}`} className="btn">View</Link>
             </div>
+          </div>  
           ))}
         </div>
       </section>
