@@ -474,13 +474,13 @@ a:hover {
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 32px;
+  gap: 20px;
 }
 
 .product-card {
   background: var(--surface);
   border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 24px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   transition: var(--transition);
@@ -489,13 +489,13 @@ a:hover {
 }
 
 .product-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
 
 .product-img {
   width: 100%;
-  height: 220px;
+  height: 200px;
   object-fit: cover;
 }
 
@@ -508,7 +508,7 @@ a:hover {
 }
 
 .product-name {
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-main);
   margin-bottom: auto;

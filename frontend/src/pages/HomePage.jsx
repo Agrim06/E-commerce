@@ -1,72 +1,57 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../utils/api"
+import api from "../utils/api";
 
 function HomePage() {
-
   const [products, setProducts] = useState([]);
-  const [cartCount, setCartCount] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() =>{
+  const highlights = [
+    {
+      title: "Everyday uniforms",
+      description: "Layerable basics built to pair with anything in your wardrobe.",
+    },
+    {
+      title: "Cold-weather ready",
+      description: "Thermal-knit fabrics, insulated outers, and wind-resistant finishes.",
+    },
+    {
+      title: "Conscious materials",
+      description: "Organic cotton, recycled blends, and low-impact dye processes.",
+    },
+  ];
+
+  useEffect(() => {
     async function fetchProducts() {
       setLoading(true);
-      setError("")
-
-      try{
-        const res = await api.get("/api/products");   
+      setError("");
+      try {
+        const res = await api.get("/api/products");
         const list = Array.isArray(res.data) ? res.data : res.data.products;
         setProducts(list || []);
-      }catch(err){
-        console.log(err);
+      } catch (err) {
+        console.error(err);
         setError(
           err?.response?.data?.message || "Failed to load products from server."
         );
-      }finally{
+      } finally {
         setLoading(false);
       }
     }
+
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    function updateCartCount() {
-      try {
-        const raw = localStorage.getItem("cart");
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          const totalQty = parsed.reduce(
-            (s, it) => s + Number(it.qty || 0),
-            0
-          );
-          setCartCount(totalQty);
-        } else {
-          setCartCount(0);
-        }
-      } catch {
-        setCartCount(0);
-      }
-    }
-
-    updateCartCount();
-
-    window.addEventListener("storage", updateCartCount);
-
-    return () => {
-      window.removeEventListener("storage", updateCartCount);
-    };
-  }, []);
-
-  function addToCart(product, qty = 1){
-    try{
+  function addToCart(product, qty = 1) {
+    try {
       const raw = localStorage.getItem("cart");
-      let cart = raw?JSON.parse(raw) :[];
+      let cart = raw ? JSON.parse(raw) : [];
 
-      const exisiting = cart.find((it) => it._id === product._id);
-      if(exisiting){
-        exisiting.qty = Number(exisiting.qty) + Number(qty);
-      }else{
+      const existing = cart.find((it) => it._id === product._id);
+      if (existing) {
+        existing.qty = Number(existing.qty || 0) + Number(qty);
+      } else {
         cart.push({
           _id: product._id,
           name: product.name,
@@ -75,30 +60,12 @@ function HomePage() {
           qty: Number(qty),
         });
       }
-       localStorage.setItem("cart", JSON.stringify(cart));
 
-    const totalQty = cart.reduce((s, it) => s + Number(it.qty || 0), 0);
-    setCartCount(totalQty);
-
-  } catch (err) {
-    console.error("Failed to add to cart:", err);
+      localStorage.setItem("cart", JSON.stringify(cart));
+    } catch (err) {
+      console.error("Failed to add to cart:", err);
     }
   }
-
-  const highlights = [
-    {
-      title: "New Arrivals",
-      description: "Check out our latest products.",
-    },
-    {
-      title: "Best Sellers",
-      description: "See what everyone's buying.",
-    },
-    {
-      title: "On Sale",
-      description: "Get the best deals.",
-    },
-  ];
 
   return (
     <div className="home-page">
@@ -147,23 +114,41 @@ function HomePage() {
           ))}
         </div>
 
-        <div className="page-title">Featured products</div>
-        <div className="product-grid">
-          {products.map((p)=>(
-            <div className="product-card">
-              <Link to={`/product/${p._id}`}>
-                <img src={p.image} className="product-img" alt={p.name} />
-              </Link>
-              <div className="product-info">
-              <Link to={`/product/${p._id}`}>{p.name}</Link>
-              <div className="product-price">₹{p.price.toFixed(2)}</div>
+        <h2 className="page-title">Featured products</h2>
 
-              <button className="btn" onClick={() => addToCart(p, 1)}>Add to Cart</button>
-              <Link to={`/product/${p._id}`} className="btn">View</Link>
-            </div>
-          </div>  
-          ))}
-        </div>
+        {loading && <p>Loading products…</p>}
+        {error && <div className="form-error" style={{ marginBottom: "1rem" }}>{error}</div>}
+        {!loading && !error && products.length === 0 && <p>No products found.</p>}
+
+        {!loading && !error && products.length > 0 && (
+          <div className="product-grid">
+            {products.map((p) => (
+              <div key={p._id} className="product-card">
+                <Link to={`/product/${p._id}`}>
+                  <img src={p.image} className="product-img" alt={p.name} />
+                </Link>
+                <div className="product-info">
+                  <Link to={`/product/${p._id}`} className="product-name">
+                    {p.name}
+                  </Link>
+                  <div className="product-price">₹{Number(p.price).toFixed(2)}</div>
+
+                  <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                    <button className="btn" onClick={() => addToCart(p, 1)}>
+                      Add to Cart
+                    </button>
+                    <Link
+                      to={`/product/${p._id}`}
+                      className="btn btn-ghost"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
