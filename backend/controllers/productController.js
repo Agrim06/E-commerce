@@ -12,6 +12,7 @@ export const getProducts = asyncHandler(async(req, res) =>{
     const keyword = req.query.keyword || "";
     const pageSize = Number(req.query.pageSize) || 12;
     const page = Number(req.query.pageNumber) || 1;
+    const featured = req.query.featured;
 
     let filter = {};
 
@@ -23,6 +24,10 @@ export const getProducts = asyncHandler(async(req, res) =>{
           { category: regex },
           { brand: regex },
       ];
+    }
+
+    if(featured === "true" || featured === true){
+      filter.isFeatured = true;
     }
 
     const count = await Product.countDocuments({ ...filter });
