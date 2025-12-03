@@ -10,6 +10,8 @@ import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import CheckoutPage from './pages/CheckoutPage';
 import AdminDashboard from './pages/AdminDashboard';
+import SearchResultsPage from "./pages/SearchResultsPage";
+import ShopPage from "./pages/ShopPage";
 
 
 export default function App() {
@@ -20,12 +22,15 @@ return (
 <Routes>
 <Route path="/" element={<HomePage />} />
 <Route path="/product/:id" element={<ProductPage />} />
+<Route path="/search" element={<SearchResultsPage />} />
 <Route path="/cart" element={<CartPage />} />
 <Route path="/login" element={<LoginPage />} />
 <Route path="/register" element={<RegisterPage />} />
 <Route path="/profile" element={<ProfilePage />} />
 <Route path="/checkout" element={<CheckoutPage />} />
 <Route path="/admin" element={<AdminDashboard />} />
+<Route path='/shop' element={<ShopPage />} />
+
 </Routes>
 </main>
 <Footer />

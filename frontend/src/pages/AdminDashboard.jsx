@@ -19,6 +19,7 @@ function AdminDashboard() {
         brand: "",
         category: "",
         description: "",
+        isFeatured: false,
     });
 
     useEffect(() => {
@@ -108,6 +109,7 @@ function AdminDashboard() {
                     brand: formData.brand.trim() || "Generic",
                     category: formData.category.trim() || "General",
                     description: formData.description.trim() || "No description", 
+                    isFeatured: formData.isFeatured || false,
                 };
 
                 const res = await api.post("/api/products" , payload);
@@ -123,6 +125,7 @@ function AdminDashboard() {
                     brand: "",
                     category: "",
                     description: "",
+                    isFeatured: false,
                 });
             }catch(err){
                 console.log(err);
@@ -238,6 +241,21 @@ function AdminDashboard() {
                     />
                     </label>
                 </div>
+
+                <label className="form-label checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="isFeatured"
+                        checked={formData.isFeatured || false}
+                        onChange={(e) => setFormData(prev => ({ ...prev, isFeatured: e.target.checked }))}
+                    />
+                    <span>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                    </span>
+                    Feature on homepage
+                    </label>
 
                 <label className="form-label">
                     Description

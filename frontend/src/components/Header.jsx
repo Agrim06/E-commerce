@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import SearchBar from './SearchBar';
 
 function Header() {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -18,14 +19,17 @@ function Header() {
           <p className="logo-subtitle">Curated essentials for modern living</p>
         </div>
 
+        <div style={{ flex: 1, marginLeft: "20px", marginRight: "20px" }}>
+          <SearchBar />
+        </div>
+
         <nav className="nav-links">
           <Link to="/">Home</Link>
-          <Link to="/product/1">Shop</Link>
-          <Link to="/cart">Cart</Link>
+          <Link to="/shop">Shop</Link>
         </nav>
 
         <div className="header-actions">
-          <Link to="/cart" className="pill-link">View Cart</Link>
+          <Link to="/cart" className="pill-link">Cart</Link>
 
           {user ? (
             <>

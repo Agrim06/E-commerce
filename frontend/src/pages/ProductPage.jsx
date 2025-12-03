@@ -93,9 +93,8 @@ function ProductPage() {
           <div className="price">
             ₹{product.price.toFixed(2) || 0 }
           </div>
-
-          <p className="description">{product.description}</p>
           <button className="btn" onClick={addToCart}>Add to Cart</button>    
+          <p className="product-desc">{product.description}</p>
         </div>
       </div>
     </div>

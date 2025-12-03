@@ -1,25 +1,36 @@
 import asyncHandler from "express-async-handler";
 import Product from "../models/Product.js";
 
+function escapeRegex(text = "") {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // @desc   Fetch all products
 // @route  GET /api/products
 // @access Public
 export const getProducts = asyncHandler(async(req, res) =>{
-    const keyword = req.query.keyword
-    ? {
-        name: {
-            $regex: req.query.keyword, $options: "i",
-        },
-    }
-    : {};
-    const pageSize = 10;
+    const keyword = req.query.keyword || "";
+    const pageSize = Number(req.query.pageSize) || 12;
     const page = Number(req.query.pageNumber) || 1;
 
-    const count = await Product.countDocuments({ ...keyword });
-    const products = await Product.find({ ...keyword })
-        .limit(pageSize)
-        .skip(pageSize * (page - 1));
-    res.json({ products, page, pages: Math.ceil(count / pageSize) });
+    let filter = {};
+
+    if(keyword.trim()){
+      const q = escapeRegex(keyword.trim());
+      const regex = { $regex: q, $options: "i" };
+      filter.$or = [
+          { name: regex },
+          { category: regex },
+          { brand: regex },
+      ];
+    }
+
+    const count = await Product.countDocuments({ ...filter });
+    const products = await Product.find({ ...filter })
+      .limit(pageSize)
+      .skip(pageSize * (page - 1));
+
+    res.json({ products, page, pages: Math.ceil(count / pageSize), count });
 });
 
 // @desc   Fetch single product
@@ -46,6 +57,7 @@ export const createProduct = asyncHandler(async(req, res) =>{
       brand,
       category,
       description,
+      isFeatured
     } = req.body;
 
     if(!name || !price ){
@@ -61,7 +73,8 @@ export const createProduct = asyncHandler(async(req, res) =>{
       brand: brand || "Generic",
       category: category || "General",
       description: description || "No description",
-      user: req.user._id
+      user: req.user._id,
+      isFeatured : !!isFeatured,
       });
 
       const created = await product.save();

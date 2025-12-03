@@ -2,50 +2,45 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import api from "../utils/api";
 
-function HomePage() {
+function ShopPage() {
   const location = useLocation();
   const [products, setProducts] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-
-  const highlights = [
-    {
-      title: "Everyday uniforms",
-      description: "Layerable basics built to pair with anything in your wardrobe.",
-    },
-    {
-      title: "Cold-weather ready",
-      description: "Thermal-knit fabrics, insulated outers, and wind-resistant finishes.",
-    },
-    {
-      title: "Conscious materials",
-      description: "Organic cotton, recycled blends, and low-impact dye processes.",
-    },
-  ];
 
   function getKeywordFromUrl(){
     const params = new URLSearchParams(location.search);
     return params.get("keyword") || "";
   }
 
-   useEffect(() => {
-  async function fetchFeatured() {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await api.get("/api/products?featured=true&pageSize=6");
-      const list = Array.isArray(res.data) ? res.data : res.data.products;
-      setProducts(list || []);
-    } catch (err) {
-      console.error(err);
-      setError(err?.response?.data?.message || "Failed to load products from server.");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchProducts() {
+      setLoading(true);
+      setError("");
+      try {
+        const keyword = getKeywordFromUrl();
+        const url = keyword ? `/api/products?keyword=${encodeURIComponent(keyword)}` : `/api/products`;
+        const res = await api.get(url);
+        const list = Array.isArray(res.data) ? res.data : res.data.products;
+        if(!cancelled) setProducts(list || []);
+      } catch (err) {
+        console.error(err);
+        if(!cancelled)
+          setError(
+            err?.response?.data?.message || "Failed to load products from server."
+          );
+      } finally {
+        if(!cancelled) setLoading(false);
+      }
     }
-  }
 
-  fetchFeatured();
-}, []);
+    fetchProducts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.search]);
 
   function addToCart(product, qty = 1) {
     try {
@@ -73,45 +68,10 @@ function HomePage() {
 
   return (
     <div className="home-page">
-      <section className="hero-section">
-        <div className="container hero-card">
-          <div>
-            <p className="eyebrow">Winter 2025 Capsule</p>
-            <h1 className="hero-title">Design-led essentials for modern living</h1>
-            <p className="hero-copy">
-              Discover elevated pieces crafted with premium materials, clean silhouettes, and thoughtful detailing.
-              Built to move seamlessly from home to city.
-            </p>
-          </div>
-
-          <div className="hero-stats">
-            <div>
-              <p className="stat-value">4.9/5</p>
-              <p className="stat-label">Customer satisfaction</p>
-            </div>
-            <div>
-              <p className="stat-value">120K+</p>
-              <p className="stat-label">Orders fulfilled</p>
-            </div>
-            <div>
-              <p className="stat-value">72h</p>
-              <p className="stat-label">Average delivery time</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="container page">
-        <div className="curation-grid">
-          {highlights.map((item) => (
-            <div key={item.title} className="curation-card">
-              <p className="eyebrow">{item.title}</p>
-              <p>{item.description}</p>
-            </div>
-          ))}
-        </div>
 
-        <h2 className="page-title">Featured products</h2>
+        <h2 className="page-title">All Products</h2>
 
         {loading && <p>Loading products…</p>}
         {error && <div className="form-error" style={{ marginBottom: "1rem" }}>{error}</div>}
@@ -151,4 +111,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default ShopPage;
