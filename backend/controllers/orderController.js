@@ -33,7 +33,7 @@ export const addOrderItems = asyncHandler(async (req, res) => {
 // @route  GET /api/orders/:id
 // @access Private (owner or admin)
 export const getOrderById = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id).populate("user" , "name email");
+  const order = await Order.findById(req.params.id).populate("user" , "name email").populate("orderItems.product", "name image");
   if(order) res.json(order);
   else{
     res.status("404");

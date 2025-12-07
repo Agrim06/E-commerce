@@ -4,17 +4,12 @@ import { Link, useNavigate } from "react-router-dom";
 function CartPage() {
   const navigate = useNavigate();
 
-  const sampleCart = [
-    { _id: "1", name: "Sample Product A", price: 99.99, image: "https://via.placeholder.com/120", qty: 2 },
-    { _id: "2", name: "Sample Product B", price: 49.5, image: "https://via.placeholder.com/120", qty: 1 },
-  ];
-
   const [cart, setCart] = useState(() => {
     try {
       const raw = localStorage.getItem("cart");
-      return raw ? JSON.parse(raw) : sampleCart;
+      return raw ? JSON.parse(raw) : [];
     } catch (err) {
-      return sampleCart;
+      return [];
     }
   });
 
