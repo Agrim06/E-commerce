@@ -26,12 +26,15 @@ export const getProducts = asyncHandler(async(req, res) =>{
       ];
     }
 
-    if(featured === "true" || featured === true){
+    // Handle featured filter - must be explicitly true
+    if(featured === "true" || featured === true || featured === "1"){
+      // Only return products where isFeatured is explicitly true
+      // This will NOT match documents where isFeatured is false, null, or missing
       filter.isFeatured = true;
     }
 
-    const count = await Product.countDocuments({ ...filter });
-    const products = await Product.find({ ...filter })
+    const count = await Product.countDocuments(filter);
+    const products = await Product.find(filter)
       .limit(pageSize)
       .skip(pageSize * (page - 1));
 

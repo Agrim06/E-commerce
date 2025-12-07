@@ -1,6 +1,10 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
+import { OAuth2Client } from "google-auth-library";
+
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
 // @desc   Register new user
 // @route  POST /api/users/register
@@ -97,4 +101,51 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error("User not found");
     }
+});
+
+// @desc   Google login
+// @route  POST /api/users/google-login
+// @access Public
+
+export const googleLogin = asyncHandler(async (req,res) => {
+    const { idToken } = req.body;
+
+    if(!idToken){
+        res.status(500);
+        throw new Error("No Id token provided");
+    }
+    
+    const ticket = await client.verifyIdToken({
+        idToken,
+        audience : process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    const { sub, email, name, picture } = payload;
+
+    if(!email){
+        res.status(400);
+        throw new Error("Google account has no e-mail.");
+    }
+
+    let user = await User.findOne({ email });
+
+    if(!user){
+        user = await User.create({
+            name : name || email.split("@")[0],
+            email,
+            password : sub,
+        });
+    }
+
+    user.name = name || user.name;
+    await user.save();
+
+    res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        token: generateToken(user._id),
+    });    
 });

@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "../utils/api";
+
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+  console.log("Google Client ID in React:", GOOGLE_CLIENT_ID);
+  console.log("window.google exists:", !!window.google);
 
 function LoginPage() {
     const navigate = useNavigate();
@@ -16,6 +20,45 @@ function LoginPage() {
     const isValidEmail = (value) =>
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
+     useEffect(() =>{
+      if(window.google && GOOGLE_CLIENT_ID){
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+        });
+
+        window.google.accounts.id.renderButton(
+          document.getElementById("googleSignInDiv"),
+          {
+            theme : "outline",
+            size : "large",
+            width : "100"
+          }
+        )
+      }
+    }, []);
+
+    async function handleGoogleResponse(response) {
+      try{
+        setError("");
+        setLoading(true);
+
+        const { data } = await api.post("/api/users/google-login" , {
+          idToken : response.credential,
+        });
+
+        localStorage.setItem("user", JSON.stringify(data));
+        navigate(from, {replace: true});
+      }catch(err){
+        console.log(err);
+        setError(
+          err?.response?.data?.message || "Google login failed. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+    
     async function handleSubmit(e) {
         e.preventDefault();
         setError("");
@@ -48,6 +91,11 @@ function LoginPage() {
             setLoading(false);
         }
     }
+
+
+
+
+
 
     return (
     <div className="container page form-page">
@@ -91,6 +139,13 @@ function LoginPage() {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
+
+      <div style={{ margin: "16px 0", textAlign: "center", color: "#6c757d" }}>
+        <span>or</span>
+      </div>
+
+      {/* Google Sign In button */}
+      <div id="googleSignInDiv" style={{ display: "flex", justifyContent: "center" }}></div>
 
       <p className="form-text">
         New here? <Link to="/register" className="link">Create an account</Link>
