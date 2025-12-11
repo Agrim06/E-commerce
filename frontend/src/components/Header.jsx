@@ -1,16 +1,44 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import SearchBar from './SearchBar';
 
+
 function Header() {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const initials = user?.name ? user.name[0]?.toUpperCase() : '';
+  const navigate = useNavigate();
+  const [user, setUser] = useState(() => {
+    try{
+      const raw = localStorage.getItem("user") || sessionStorage.getItem("user");
+      return raw ? JSON.parse(raw) : null
+    } catch{
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    function handleAuthChange() {
+      try{
+        const raw = localStorage.getItem("user") || sessionStorage.getItem("user");
+        setUser(raw ? JSON.parse(raw) : null);
+      } catch{
+        setUser(null);
+      }
+    }
+
+    window.addEventListener("authUserChanged", handleAuthChange);
+    return () => {
+      window.removeEventListener("authUserChanged", handleAuthChange);
+    };
+  }, []);
 
   function handleLogout() {
     localStorage.removeItem('user');
-    window.location.reload();
+    sessionStorage.removeItem('user');
+    window.dispatchEvent(new Event("authUserChanged"));
+    navigate('/login');
   }
-
+  const initials = user && user.name
+    ? user.name.split(" ").map(s => s[0]).slice(0,2).join("").toUpperCase()
+    : "";
   return (
     <header className="header">
       <div className="container header-inner">

@@ -48,6 +48,7 @@ function LoginPage() {
         });
 
         localStorage.setItem("user", JSON.stringify(data));
+        window.dispatchEvent(new Event("authUserChanged"));
         navigate(from, {replace: true});
       }catch(err){
         console.log(err);
@@ -80,6 +81,7 @@ function LoginPage() {
             const { data } = await api.post("/api/users/login" , {email, password});
             localStorage.setItem("user", JSON.stringify(data));
             
+            window.dispatchEvent(new Event("authUserChanged"))
             navigate(from, { replace: true });
         } catch (err) {
             console.error(err);
