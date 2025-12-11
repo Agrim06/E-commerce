@@ -113,6 +113,7 @@ function CheckoutPage(){
             );
         } finally {
             setLoading(false)
+            navigate('/');
         }
     };
 
