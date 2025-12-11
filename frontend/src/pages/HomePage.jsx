@@ -84,32 +84,12 @@ function HomePage() {
             </p>
           </div>
 
-          <div className="hero-stats">
-            <div>
-              <p className="stat-value">4.9/5</p>
-              <p className="stat-label">Customer satisfaction</p>
-            </div>
-            <div>
-              <p className="stat-value">120K+</p>
-              <p className="stat-label">Orders fulfilled</p>
-            </div>
-            <div>
-              <p className="stat-value">72h</p>
-              <p className="stat-label">Average delivery time</p>
-            </div>
-          </div>
+         
         </div>
       </section>
 
       <section className="container page">
-        <div className="curation-grid">
-          {highlights.map((item) => (
-            <div key={item.title} className="curation-card">
-              <p className="eyebrow">{item.title}</p>
-              <p>{item.description}</p>
-            </div>
-          ))}
-        </div>
+
 
         <h2 className="page-title">Featured products</h2>
 

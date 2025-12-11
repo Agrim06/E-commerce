@@ -1495,3 +1495,175 @@ textarea.input {
 .checkbox-label input[type="checkbox"]:focus + span {
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
+
+/* ============================================
+   MOBILE HEADER
+============================================ */
+
+@media (max-width: 768px) {
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .brand p {
+    display: none; /* hide subtitle on mobile for space */
+  }
+}
+
+/* VERY SMALL screens */
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.4rem;
+  }
+
+  .nav-links a {
+    font-size: 0.9rem;
+  }
+
+  .pill-link,
+  .btn,
+  .btn-ghost,
+  .user-chip {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ============================================
+   PRODUCT GRID
+============================================ */
+
+@media (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .product-img {
+    height: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: 1fr 1fr; /* strict 2-column */
+  }
+}
+
+@media (max-width: 768px) {
+  .product-page-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .product-page-img {
+    max-height: 320px;
+    object-fit: cover;
+  }
+
+  .product-title {
+    font-size: 1.6rem;
+  }
+
+  .price {
+    font-size: 1.4rem;
+  }
+}
+
+/* ============================================
+   CART PAGE RESPONSIVE
+============================================ */
+
+/* ===================================== */
+/* 1. Base Styles (Default for Desktop)  */
+/* ===================================== */
+
+html {
+  font-size: 16px; 
+}
+
+/* ===================================== */
+/* 2. Responsive Styles                  */
+/* ===================================== */
+
+@media (max-width: 768px) {
+  /* Font size adjustment */
+  html {
+    font-size: 15px; 
+  }
+
+  /* --- Layout & Structure --- */
+
+  .cart-layout {
+    grid-template-columns: 1fr; 
+  }
+
+  .cart-left, 
+  .cart-right {
+    width: 100%; 
+  }
+  
+  .order-summary {
+    margin-top: 20px;
+    padding: 20px;
+  }
+
+  .form {
+    gap: 12px;
+  }
+
+  /* --- Cart Item Details --- */
+  
+  .cart-item {
+    flex-direction: column;
+    justify-content: flex-start;  
+    align-items: flex-start; 
+    gap: 12px;
+    padding: 12px;
+    height: 500px;
+  }
+
+  .cart-item-img {
+    width: 100%; 
+    height: 60%; 
+    border-radius: var(--radius-md);
+  }
+
+  /* *** FIX 1: Target the info block to prevent it from consuming vertical space *** */
+  .cart-item-info {
+    width: 100%;
+    flex-grow: 0; /* Prevents stretching and causing the gap */
+    margin-bottom: 0; /* Ensure no residual margin */
+  }
+
+  .qty-controls {
+    justify-content: flex-start; 
+  }
+
+  /* *** FIX 2: Reduce spacing and ensure the total is close to the content *** */
+  .cart-item-total {
+    border-top: 1px solid var(--border);
+    padding-top: 10px; 
+    margin-top: 0; /* Important: ensure no top margin is present */
+  }
+}
+
+/* --- Smaller Mobile Screens (Max Width: 480px) --- */
+@media (max-width: 480px) {
+  html {
+    font-size: 14px; 
+  }
+}
