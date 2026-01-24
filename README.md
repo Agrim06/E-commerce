@@ -236,10 +236,6 @@ The application is currently deployed on Vercel:
 - CORS configuration
 - Input validation and error handling
 
-## 📝 License
-
-This project is licensed under the ISC License.
-
 ## 👨‍💻 Author
 
 Built with ❤️ for modern e-commerce experiences.

@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import Cart from "../models/Cart";
+import Cart from "../models/Cart.js";
 
 
 // GET cart
